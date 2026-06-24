@@ -336,18 +336,529 @@ private theorem recurrence_exponential_bound {a : Nat -> Real} {rho : Real} {L :
       (n := n)
     exact hiter.trans hpow
 
-/--
-Missing mathematical fact: combine Lemma 4 with the box translation estimate to
-obtain the finite-volume recurrence `a_n <= rho * a_(n-L)` for the finite box
-exit probabilities, where `rho = phi p S < 1`.
--/
+private theorem prob_le_of_pred_imp {d : Nat} {p : Real} (hp0 : 0 <= p) (hp1 : p <= 1)
+    (E F : LocalEvent d) (himp : forall omega, E.pred omega -> F.pred omega) :
+    Prob p E <= Prob p F := by
+  classical
+  let G : Finset (Bond d) := E.support ∪ F.support
+  have hEsub : E.support <= G := by
+    intro e he
+    exact Finset.mem_union.mpr (Or.inl he)
+  have hFsub : F.support <= G := by
+    intro e he
+    exact Finset.mem_union.mpr (Or.inr he)
+  calc
+    Prob p E = ProbOn p G (fun sigma => E.pred (extendConfig G sigma)) :=
+      prob_support_mono E hEsub
+    _ <= ProbOn p G (fun sigma => F.pred (extendConfig G sigma)) := by
+      exact probOn_mono (fun sigma h => himp (extendConfig G sigma) h) hp0 hp1
+    _ = Prob p F := (prob_support_mono F hFsub).symm
+
+private def translateVertexEmbedding {d : Nat} (a : Vertex d) : Vertex d ↪ Vertex d where
+  toFun := translateVertex a
+  inj' := by
+    intro x y h
+    funext i
+    have hi := congrFun h i
+    dsimp [translateVertex] at hi
+    change x i + a i = y i + a i at hi
+    omega
+
+private theorem translateVertex_neg_apply {d : Nat} (a x : Vertex d) :
+    translateVertex (-a) (translateVertex a x) = x := by
+  funext i
+  change x i + a i + (-a i) = x i
+  ring
+
+private theorem translateVertex_neg_self {d : Nat} (x : Vertex d) :
+    translateVertex (-x) x = (0 : Vertex d) := by
+  funext i
+  change x i + -x i = 0
+  ring
+
+private theorem translateVertex_neg_eq_sub {d : Nat} (x y : Vertex d) :
+    translateVertex (-y) x = x - y := by
+  funext i
+  change x i + -y i = x i - y i
+  ring
+
+private theorem translateVertex_neg_image {d : Nat} (a : Vertex d) (S : Finset (Vertex d)) :
+    (S.image (translateVertex a)).image (translateVertex (-a)) = S := by
+  classical
+  ext x
+  constructor
+  · intro hx
+    rw [Finset.mem_image] at hx
+    rcases hx with ⟨y, hy, hxy⟩
+    rw [Finset.mem_image] at hy
+    rcases hy with ⟨z, hz, rfl⟩
+    have hxz : x = z := by
+      rw [← hxy]
+      exact translateVertex_neg_apply a z
+    simpa [hxz] using hz
+  · intro hx
+    rw [Finset.mem_image]
+    refine ⟨translateVertex a x, ?_, ?_⟩
+    · rw [Finset.mem_image]
+      exact ⟨x, hx, rfl⟩
+    · exact translateVertex_neg_apply a x
+
+private def translateBond {d : Nat} (a : Vertex d) (b : Bond d) : Bond d where
+  carrier := b.carrier.map (translateVertexEmbedding a)
+  card_two := by
+    rw [Finset.card_map]
+    exact b.card_two
+  adj_pair := by
+    intro u hu v hv huv
+    rw [Finset.mem_map] at hu hv
+    rcases hu with ⟨u0, hu0, rfl⟩
+    rcases hv with ⟨v0, hv0, hvEq⟩
+    subst hvEq
+    have huv0 : u0 ≠ v0 := by
+      intro h
+      apply huv
+      simp [h]
+    exact (adj_translate_iff (a := a)).mpr (b.adj_pair u0 hu0 v0 hv0 huv0)
+
+private theorem translateBond_neg_apply {d : Nat} (a : Vertex d) (b : Bond d) :
+    translateBond (-a) (translateBond a b) = b := by
+  cases b with
+  | mk carrier card_two adj_pair =>
+      simp [translateBond]
+      ext x
+      constructor
+      · intro hx
+        rw [Finset.mem_map] at hx
+        rcases hx with ⟨y, hy, hxy⟩
+        rw [Finset.mem_map] at hy
+        rcases hy with ⟨z, hz, rfl⟩
+        have hxz : x = z := by
+          rw [← hxy]
+          exact translateVertex_neg_apply a z
+        simpa [hxz] using hz
+      · intro hx
+        rw [Finset.mem_map]
+        refine ⟨translateVertex a x, ?_, ?_⟩
+        · rw [Finset.mem_map]
+          exact ⟨x, hx, rfl⟩
+        · exact translateVertex_neg_apply a x
+
+private theorem translateBond_bondOfAdj {d : Nat} (a : Vertex d)
+    {x y : Vertex d} (hxy : Adj x y) :
+    translateBond a (bondOfAdj hxy) =
+      bondOfAdj ((adj_translate_iff (a := a) (x := x) (y := y)).mpr hxy) := by
+  simp [translateBond, bondOfAdj]
+  ext z
+  simp [translateVertexEmbedding]
+
+private theorem translateBond_mem_internalBonds {d : Nat} {a : Vertex d}
+    {S : Finset (Vertex d)} {b : Bond d}
+    (hb : b ∈ internalBonds S) :
+    translateBond a b ∈ internalBonds (S.image (translateVertex a)) := by
+  classical
+  rw [internalBonds] at hb ⊢
+  rcases Finset.mem_image.mp hb with ⟨e, _he, rfl⟩
+  have hfilter := Finset.mem_filter.mp e.property
+  let x : Vertex d := e.1.1
+  let y : Vertex d := e.1.2
+  have hxS : x ∈ S := (Finset.mem_product.mp hfilter.1).1
+  have hyS : y ∈ S := (Finset.mem_product.mp hfilter.1).2
+  have hxy : Adj x y := hfilter.2.2
+  refine Finset.mem_image.mpr ?_
+  let et : {e : Vertex d × Vertex d //
+      e ∈ ((S.image (translateVertex a)).product (S.image (translateVertex a))).filter
+        fun e : Vertex d × Vertex d => e.1 ≠ e.2 ∧ Adj e.1 e.2} :=
+    ⟨(translateVertex a x, translateVertex a y), by
+      refine Finset.mem_filter.mpr ?_
+      refine ⟨Finset.mem_product.mpr ?_, ?_, (adj_translate_iff (a := a)).mpr hxy⟩
+      · exact ⟨Finset.mem_image.mpr ⟨x, hxS, rfl⟩,
+          Finset.mem_image.mpr ⟨y, hyS, rfl⟩⟩
+      · intro h
+        have : x = y := (translateVertexEmbedding a).injective h
+        exact hfilter.2.1 this⟩
+  refine ⟨et, by simp [et], ?_⟩
+  dsimp [et, x, y]
+  rw [translateBond_bondOfAdj]
+
+private theorem translateBond_mem_internalBonds_neg {d : Nat} {a : Vertex d}
+    {S : Finset (Vertex d)} {b : Bond d}
+    (hb : b ∈ internalBonds (S.image (translateVertex a))) :
+    translateBond (-a) b ∈ internalBonds S := by
+  have h := translateBond_mem_internalBonds (a := -a) (S := S.image (translateVertex a)) hb
+  simpa [translateVertex_neg_image] using h
+
+private def translateInternalBondsEquiv {d : Nat} (a : Vertex d) (S : Finset (Vertex d)) :
+    internalBonds S ≃ internalBonds (S.image (translateVertex a)) where
+  toFun b := ⟨translateBond a b.1, translateBond_mem_internalBonds (a := a) b.2⟩
+  invFun b := ⟨translateBond (-a) b.1, translateBond_mem_internalBonds_neg (a := a) b.2⟩
+  left_inv := by
+    intro b
+    apply Subtype.ext
+    exact translateBond_neg_apply a b.1
+  right_inv := by
+    intro b
+    apply Subtype.ext
+    have h := translateBond_neg_apply (-a) b.1
+    simpa using h
+
+private theorem openPath_translate_config {d : Nat} {omega omega' : Config d}
+    {a : Vertex d} {gamma : List (Vertex d)}
+    (hopen_translate : forall {u v : Vertex d} (huv : Adj u v),
+      omega (bondOfAdj huv) = true ->
+      omega' (bondOfAdj ((adj_translate_iff (a := a) (x := u) (y := v)).mpr huv)) = true)
+    (hgamma : OpenPath omega gamma) :
+    OpenPath omega' (gamma.map (translateVertex a)) := by
+  rw [OpenPath, List.isChain_map]
+  exact hgamma.imp fun {_ _} h => by
+    rcases h with ⟨huv, hopen⟩
+    exact ⟨(adj_translate_iff (a := a)).mpr huv, hopen_translate huv hopen⟩
+
+private theorem connIn_translate_config {d : Nat} {omega omega' : Config d}
+    {S : Finset (Vertex d)} {a x y : Vertex d}
+    (hopen_translate : forall {u v : Vertex d} (huv : Adj u v),
+      omega (bondOfAdj huv) = true ->
+      omega' (bondOfAdj ((adj_translate_iff (a := a) (x := u) (y := v)).mpr huv)) = true)
+    (hxy : ConnIn omega S x y) :
+    ConnIn omega' (S.image (translateVertex a)) (translateVertex a x) (translateVertex a y) := by
+  rcases hxy with ⟨gamma, hpath, hS, hopen⟩
+  exact ⟨gamma.map (translateVertex a), pathFromTo_translate hpath,
+    pathIn_translate hS, openPath_translate_config hopen_translate hopen⟩
+
+private theorem connToSetIn_translate_assignment {d : Nat} {a : Vertex d}
+    {T B : Finset (Vertex d)} {u : Vertex d}
+    (tau : internalBonds (T.image (translateVertex a)) -> Bool) :
+    let sigma : internalBonds T -> Bool := fun b => tau (translateInternalBondsEquiv a T b)
+    ConnToSetIn (extendConfig (internalBonds T) sigma) T u B ->
+      ConnToSetIn (extendConfig (internalBonds (T.image (translateVertex a))) tau)
+        (T.image (translateVertex a)) (translateVertex a u) (B.image (translateVertex a)) := by
+  classical
+  intro sigma hconn
+  rcases hconn with ⟨b, hb, hconnub⟩
+  refine ⟨translateVertex a b, Finset.mem_image.mpr ⟨b, hb, rfl⟩, ?_⟩
+  refine connIn_translate_config ?_ hconnub
+  intro x y hxy hopen
+  by_cases hbxy : bondOfAdj hxy ∈ internalBonds T
+  · have hopen_sigma : sigma ⟨bondOfAdj hxy, hbxy⟩ = true := by
+      simpa [extendConfig, hbxy] using hopen
+    let hxy' : Adj (translateVertex a x) (translateVertex a y) :=
+      (adj_translate_iff (a := a)).mpr hxy
+    have hbxy' : bondOfAdj hxy' ∈ internalBonds (T.image (translateVertex a)) := by
+      have hmem := translateBond_mem_internalBonds (a := a) hbxy
+      simpa [translateBond_bondOfAdj (a := a) hxy] using hmem
+    have hidx :
+        (⟨bondOfAdj hxy', hbxy'⟩ : internalBonds (T.image (translateVertex a))) =
+          translateInternalBondsEquiv a T ⟨bondOfAdj hxy, hbxy⟩ := by
+      apply Subtype.ext
+      exact (translateBond_bondOfAdj (a := a) hxy).symm
+    change extendConfig (internalBonds (T.image (translateVertex a))) tau
+      (bondOfAdj hxy') = true
+    simpa [extendConfig, hbxy', hidx] using hopen_sigma
+  · simp [extendConfig, hbxy] at hopen
+
+private theorem prob_connToSetIn_le_translate {d : Nat} {p : Real}
+    (hp0 : 0 <= p) (hp1 : p <= 1) (a : Vertex d)
+    (T B : Finset (Vertex d)) (u : Vertex d) :
+    Prob p (connToSetInEvent T u B) <=
+      Prob p (connToSetInEvent (T.image (translateVertex a)) (translateVertex a u)
+        (B.image (translateVertex a))) := by
+  classical
+  let F : Finset (Bond d) := internalBonds T
+  let G : Finset (Bond d) := internalBonds (T.image (translateVertex a))
+  let e : F ≃ G := translateInternalBondsEquiv a T
+  let A : (F -> Bool) -> Prop := fun sigma => ConnToSetIn (extendConfig F sigma) T u B
+  let A' : (G -> Bool) -> Prop := fun tau =>
+    ConnToSetIn (extendConfig G tau) (T.image (translateVertex a)) (translateVertex a u)
+      (B.image (translateVertex a))
+  have hmono : bernProb p A <= bernProb p
+      (fun sigma : F -> Bool => A' (fun g : G => sigma (e.symm g))) := by
+    refine bernProb_mono ?_ hp0 hp1
+    intro sigma hA
+    have hforward := connToSetIn_translate_assignment (a := a) (T := T) (B := B)
+      (u := u) (fun g : G => sigma (e.symm g))
+    dsimp [A']
+    dsimp at hforward
+    have hsigeq : (fun b : internalBonds T => (fun g : G => sigma (e.symm g))
+        (translateInternalBondsEquiv a T b)) = sigma := by
+      funext b
+      simp [e]
+    have hA' : ConnToSetIn (extendConfig (internalBonds T)
+        (fun b : internalBonds T => (fun g : G => sigma (e.symm g))
+          (translateInternalBondsEquiv a T b))) T u B := by
+      simpa [hsigeq, A, F] using hA
+    simpa [F, G, e] using hforward hA'
+  calc
+    Prob p (connToSetInEvent T u B) = bernProb p A := rfl
+    _ <= bernProb p (fun sigma : F -> Bool => A' (fun g : G => sigma (e.symm g))) :=
+      hmono
+    _ = bernProb p A' := by
+      exact bernProb_reindex (α := F) (β := G) p e A'
+    _ = Prob p (connToSetInEvent (T.image (translateVertex a)) (translateVertex a u)
+        (B.image (translateVertex a))) := rfl
+
+private theorem connIn_single {d : Nat} {omega : Config d} {S : Finset (Vertex d)}
+    {x : Vertex d} (hx : x ∈ S) : ConnIn omega S x x := by
+  refine ⟨[x], ?_, ?_, ?_⟩
+  · simp [PathFromTo, IsPath]
+  · intro z hz
+    have hzx : z = x := by simpa using hz
+    simpa [hzx] using hx
+  · simp [OpenPath]
+
+private theorem connIn_prepend_open_adj {d : Nat} {omega : Config d}
+    {S : Finset (Vertex d)} {x y z : Vertex d}
+    (hxS : x ∈ S) (hxy : Adj x y) (hopen : omega (bondOfAdj hxy) = true)
+    (hconn : ConnIn omega S y z) : ConnIn omega S x z := by
+  rcases hconn with ⟨gamma, hpath, hS, hopenPath⟩
+  rcases hpath with ⟨hhead, hlast, hpathChain⟩
+  cases gamma with
+  | nil => simp at hhead
+  | cons a rest =>
+      have hay : a = y := by simpa using hhead
+      subst a
+      refine ⟨x :: y :: rest, ?_, ?_, ?_⟩
+      · constructor
+        · simp
+        · constructor
+          · simpa using hlast
+          · rw [IsPath, List.isChain_cons_cons]
+            exact ⟨hxy, hpathChain⟩
+      · intro w hw
+        simp at hw
+        rcases hw with rfl | hw
+        · exact hxS
+        · exact hS w (by simpa using hw)
+      · rw [OpenPath, List.isChain_cons_cons]
+        exact ⟨⟨hxy, hopen⟩, hopenPath⟩
+
+private theorem connIn_append_open_adj {d : Nat} {omega : Config d}
+    {S T : Finset (Vertex d)} {x y z : Vertex d}
+    (hST : S <= T) (hzT : z ∈ T) (hyz : Adj y z)
+    (hopen : omega (bondOfAdj hyz) = true)
+    (hconn : ConnIn omega S x y) :
+    ConnIn omega T x z := by
+  rcases hconn with ⟨gamma, hpath, hS, hopenPath⟩
+  rcases hpath with ⟨hhead, hlast, hpathChain⟩
+  refine ⟨gamma ++ [z], ?_, ?_, ?_⟩
+  · constructor
+    · rw [List.head?_append]
+      simp [hhead]
+    · constructor
+      · simp
+      · rw [IsPath, List.isChain_append]
+        refine ⟨hpathChain, by simp, ?_⟩
+        intro a ha b hb
+        have hay : y = a := by simpa [hlast] using ha
+        have hzb : z = b := by simpa using hb
+        subst a
+        subst b
+        exact hyz
+  · intro w hw
+    rw [List.mem_append] at hw
+    rcases hw with hw | hw
+    · exact hST (hS w hw)
+    · have hwz : w = z := by simpa using hw
+      simpa [hwz] using hzT
+  · rw [OpenPath, List.isChain_append]
+    refine ⟨hopenPath, by simp, ?_⟩
+    intro a ha b hb
+    have hay : y = a := by simpa [hlast] using ha
+    have hzb : z = b := by simpa using hb
+    subst a
+    subst b
+    exact ⟨hyz, hopen⟩
+
+private theorem exitPred_of_connIn_to_not_mem {d : Nat} {omega : Config d}
+    {S T : Finset (Vertex d)} {x z : Vertex d}
+    (hxS : x ∈ S) (hzS : z ∉ S)
+    (hconn : ConnIn omega T x z) :
+    exists e, exists he : e ∈ orientedBoundary S,
+      ConnIn omega S x e.1 /\
+      omega (bondOfAdj (orientedBoundary_adj he)) = true := by
+  rcases hconn with ⟨gamma, hpath, hT, hopenPath⟩
+  revert x z
+  induction gamma with
+  | nil =>
+      intro x z hxS hzS hpath
+      rcases hpath with ⟨hhead, _hlast, _hchain⟩
+      simp at hhead
+  | cons a rest ih =>
+      intro x z hxS hzS hpath
+      rcases hpath with ⟨hhead, hlast, hchain⟩
+      cases rest with
+      | nil =>
+          have hax : a = x := by simpa using hhead
+          have haz : a = z := by simpa using hlast
+          exact False.elim (hzS (by simpa [← hax, ← haz] using hxS))
+      | cons b tail =>
+          have hax : a = x := by simpa using hhead
+          subst x
+          have haS : a ∈ S := hxS
+          have hchain' := List.isChain_cons_cons.mp hchain
+          have hopen' := List.isChain_cons_cons.mp hopenPath
+          by_cases hbS : b ∈ S
+          · have htail_path : PathFromTo (b :: tail) b z := by
+              exact ⟨rfl, by simpa using hlast, hchain'.2⟩
+            have htail_T : PathIn T (b :: tail) := by
+              intro w hw
+              exact hT w (by simp [hw])
+            rcases ih htail_T hopen'.2 hbS hzS htail_path with ⟨e, he, hconn, hopenEdge⟩
+            refine ⟨e, he, ?_, hopenEdge⟩
+            exact connIn_prepend_open_adj haS hchain'.1 hopen'.1.choose_spec hconn
+          · let e : OrientedEdge d := (a, b)
+            have he : e ∈ orientedBoundary S := by
+              rw [mem_orientedBoundary_iff]
+              exact ⟨haS, hbS, hchain'.1⟩
+            refine ⟨e, he, ?_, ?_⟩
+            · dsimp [e]
+              exact connIn_single haS
+            · dsimp [e]
+              have hbEq : bondOfAdj (orientedBoundary_adj he) = bondOfAdj hchain'.1 := by
+                apply bondOfAdj_same
+              simpa [hbEq] using hopen'.1.choose_spec
+
+private noncomputable def boxExitTargets (d n : Nat) : Finset (Vertex d) :=
+  (orientedBoundary (ball d n)).image Prod.snd
+
+private noncomputable def boxExitAmbient (d n : Nat) : Finset (Vertex d) :=
+  ball d n ∪ boxExitTargets d n
+
+private theorem mem_boxExitTargets_not_ball {d n : Nat} {x : Vertex d}
+    (hx : x ∈ boxExitTargets d n) : x ∉ ball d n := by
+  classical
+  rw [boxExitTargets] at hx
+  rcases Finset.mem_image.mp hx with ⟨e, he, rfl⟩
+  exact (mem_orientedBoundary_iff.mp he).2.1
+
+private theorem boxExitProb_le_boundary_conn {d : Nat} {p : Real}
+    (hp0 : 0 <= p) (hp1 : p <= 1) (n : Nat) :
+    boxExitProb d p n <=
+      Prob p (connToSetInEvent (boxExitAmbient d n) (0 : Vertex d) (boxExitTargets d n)) := by
+  classical
+  unfold boxExitProb exitProb
+  refine prob_le_of_pred_imp hp0 hp1
+    (exitEvent (ball d n) (zero_mem_ball d n))
+    (connToSetInEvent (boxExitAmbient d n) (0 : Vertex d) (boxExitTargets d n)) ?_
+  intro omega hexit
+  rcases hexit with ⟨e, he, hconn, hopen⟩
+  refine ⟨e.2, ?_, ?_⟩
+  · rw [boxExitTargets]
+    exact Finset.mem_image.mpr ⟨e, he, rfl⟩
+  · exact connIn_append_open_adj
+      (S := ball d n) (T := boxExitAmbient d n)
+      (by
+        intro x hx
+        exact Finset.mem_union.mpr (Or.inl hx))
+      (Finset.mem_union.mpr (Or.inr (by
+        rw [boxExitTargets]
+        exact Finset.mem_image.mpr ⟨e, he, rfl⟩)))
+      (orientedBoundary_adj he) hopen hconn
+
+private theorem connToSetIn_le_boxExitProb_of_targets_outside {d : Nat} {p : Real}
+    (hp0 : 0 <= p) (hp1 : p <= 1) (T B : Finset (Vertex d)) (k : Nat)
+    (hB : forall z, z ∈ B -> z ∉ ball d k) :
+    Prob p (connToSetInEvent T (0 : Vertex d) B) <= boxExitProb d p k := by
+  classical
+  unfold boxExitProb exitProb
+  refine prob_le_of_pred_imp hp0 hp1
+    (connToSetInEvent T (0 : Vertex d) B)
+    (exitEvent (ball d k) (zero_mem_ball d k)) ?_
+  intro omega hconn
+  rcases hconn with ⟨z, hz, hconnz⟩
+  exact exitPred_of_connIn_to_not_mem (zero_mem_ball d k) (hB z hz) hconnz
+
+private theorem connToBoxBoundary_le_shifted_boxExitProb {d : Nat} {p : Real}
+    (hp0 : 0 <= p) (hp1 : p <= 1) {L n : Nat} {y : Vertex d}
+    (hy : y ∈ ball d L) (hn : L <= n) :
+    Prob p (connToSetInEvent (boxExitAmbient d n) y (boxExitTargets d n)) <=
+      boxExitProb d p (n - L) := by
+  classical
+  let a : Vertex d := -y
+  have htranslate := prob_connToSetIn_le_translate hp0 hp1 a
+    (boxExitAmbient d n) (boxExitTargets d n) y
+  have htargets :
+      forall z, z ∈ (boxExitTargets d n).image (translateVertex a) ->
+        z ∉ ball d (n - L) := by
+    intro z hz
+    rw [Finset.mem_image] at hz
+    rcases hz with ⟨w, hw, rfl⟩
+    have hwout : w ∉ ball d n := mem_boxExitTargets_not_ball hw
+    have hgeom := translate_ball_exit (d := d) (n := n) (L := L) (y := y) (z := w)
+      hy hwout hn
+    simpa [a, translateVertex_neg_eq_sub] using hgeom
+  have hle_exit := connToSetIn_le_boxExitProb_of_targets_outside hp0 hp1
+    ((boxExitAmbient d n).image (translateVertex a))
+    ((boxExitTargets d n).image (translateVertex a)) (n - L) htargets
+  have hstart : translateVertex a y = (0 : Vertex d) := by
+    simpa [a] using translateVertex_neg_self y
+  exact htranslate.trans (by simpa [hstart] using hle_exit)
+
 private theorem boxExitProb_recurrence_of_phi_lt_one {d : Nat} {p : Real}
     (hp0 : 0 <= p) (hp1 : p <= 1) (S : Finset (Vertex d)) (L : Nat)
-    (_hL : 0 < L) (_hS : forall x, x ∈ S -> x ∈ ball d (L - 1))
-    (_h0S : (0 : Vertex d) ∈ S) (_hphi : phi p S < 1) :
+    (hL : 0 < L) (hS : forall x, x ∈ S -> x ∈ ball d (L - 1))
+    (h0S : (0 : Vertex d) ∈ S) (_hphi : phi p S < 1) :
     forall n : Nat, L <= n ->
       boxExitProb d p n <= phi p S * boxExitProb d p (n - L) := by
-  sorry
+  classical
+  intro n hn
+  let B : Finset (Vertex d) := boxExitTargets d n
+  let T : Finset (Vertex d) := boxExitAmbient d n
+  have hST : S <= T := by
+    intro x hx
+    exact Finset.mem_union.mpr (Or.inl (by
+      rw [mem_ball_iff]
+      have hxL : l1 x <= L - 1 := mem_ball_iff.mp (hS x hx)
+      omega))
+  have hBT : B <= T := by
+    intro x hx
+    exact Finset.mem_union.mpr (Or.inr hx)
+  have hBS : Disjoint B S := by
+    rw [Finset.disjoint_left]
+    intro x hxB hxS
+    have hxnot : x ∉ ball d n := mem_boxExitTargets_not_ball (d := d) (n := n) (x := x)
+      (by simpa [B] using hxB)
+    apply hxnot
+    rw [mem_ball_iff]
+    have hxL : l1 x <= L - 1 := mem_ball_iff.mp (hS x hxS)
+    omega
+  have hbox_to_conn :
+      boxExitProb d p n <= Prob p (connToSetInEvent T (0 : Vertex d) B) := by
+    simpa [T, B] using boxExitProb_le_boundary_conn (d := d) (p := p) hp0 hp1 n
+  have hboundary :
+      Prob p (connToSetInEvent T (0 : Vertex d) B) <=
+        (orientedBoundary S).sum
+          (fun e => p * Prob p (connInEvent S (0 : Vertex d) e.1) *
+            Prob p (connToSetInEvent T e.2 B)) := by
+    exact boundary_inequality T S B (0 : Vertex d) h0S hST hBT hBS hp0 hp1
+  have hterm :
+      (orientedBoundary S).sum
+          (fun e => p * Prob p (connInEvent S (0 : Vertex d) e.1) *
+            Prob p (connToSetInEvent T e.2 B)) <=
+        (orientedBoundary S).sum
+          (fun e => p * Prob p (connInEvent S (0 : Vertex d) e.1) *
+            boxExitProb d p (n - L)) := by
+    refine Finset.sum_le_sum ?_
+    intro e he
+    have hy : e.2 ∈ ball d L := boundary_endpoint_mem_ball hL hS he
+    have hconn_le :
+        Prob p (connToSetInEvent T e.2 B) <= boxExitProb d p (n - L) := by
+      simpa [T, B] using
+        connToBoxBoundary_le_shifted_boxExitProb (d := d) (p := p) hp0 hp1 hy hn
+    have hcoef_nonneg :
+        0 <= p * Prob p (connInEvent S (0 : Vertex d) e.1) := by
+      exact mul_nonneg hp0 (probOn_nonneg
+        (F := (connInEvent S (0 : Vertex d) e.1).support)
+        (A := fun sigma : (connInEvent S (0 : Vertex d) e.1).support -> Bool =>
+          (connInEvent S (0 : Vertex d) e.1).pred
+            (extendConfig (connInEvent S (0 : Vertex d) e.1).support sigma))
+        hp0 hp1)
+    exact mul_le_mul_of_nonneg_left hconn_le hcoef_nonneg
+  have hfactor :
+      (orientedBoundary S).sum
+          (fun e => p * Prob p (connInEvent S (0 : Vertex d) e.1) *
+            boxExitProb d p (n - L)) =
+        phi p S * boxExitProb d p (n - L) := by
+    simp [phi, Finset.mul_sum, mul_comm, mul_left_comm]
+  exact hbox_to_conn.trans (hboundary.trans (hterm.trans_eq hfactor))
 
 private theorem exists_ball_bound_for_finset {d : Nat} (S : Finset (Vertex d)) :
     exists L : Nat, 0 < L /\ forall x, x ∈ S -> x ∈ ball d (L - 1) := by
