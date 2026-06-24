@@ -22,7 +22,11 @@ noncomputable def clusterIncidentBonds {d : Nat}
     e.1 ≠ e.2 /\ Adj e.1 e.2 /\ (e.1 ∈ C \/ e.2 ∈ C)).attach.image
       fun e => bondOfAdj ((Finset.mem_filter.mp e.property).2.2.1)
 
--- M0 stub: the event `C_S(u) = C` depends only on internal bonds incident to `C`.
+/-
+Missing mathematical fact: prove the sharp cluster-support characterization.  The event
+`C_S(u) = C` is determined by open connections inside `C` and closed boundary bonds from
+`C` to `S \ C`; edges wholly inside `S \ C` cannot affect the cluster of `u`.
+-/
 theorem cluster_eq_dependsOn_incident {d : Nat}
     (S C : Finset (Vertex d)) (u : Vertex d) :
     DependsOn (clusterIncidentBonds S C) (ClusterEqPred S C u) := by
