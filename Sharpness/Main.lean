@@ -12,10 +12,12 @@ theorem sharpness_zd (d : Nat) (_hd : 2 <= d) :
         forall n : Nat, boxExitProb d p n <= Real.exp (-(c * (n : Real)))) /\
     (forall p : Real, pCrit d < p -> p < 1 ->
       theta d p >= (p - pCrit d) / (p * (1 - pCrit d))) := by
+  have hdpos : 0 < d := lt_of_lt_of_le (by norm_num : (0 : Nat) < 2) _hd
   constructor
   · intro p hp0 hp
-    exact exponential_decay_below_pCrit (d := d) hp0 hp
+    exact exponential_decay_below_pCrit (d := d) (p := p) (hd := hdpos) (hp0 := hp0) (hp := hp)
   · intro p hp hp1
-    exact supercritical_lower_bound_above_pCrit (d := d) hp hp1
+    exact supercritical_lower_bound_above_pCrit (d := d) (p := p) (hd := hdpos) (hp := hp)
+      (hp1 := hp1)
 
 end Sharpness

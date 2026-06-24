@@ -4,6 +4,9 @@ import Sharpness.Paths
 
 namespace Sharpness
 
+open Filter
+open scoped Topology
+
 /-- Predicate for the finite-volume exit event from `Lam`. -/
 def ExitPred {d : Nat} (Lam : Finset (Vertex d)) (omega : Config d) : Prop :=
   exists e, exists he : e ∈ orientedBoundary Lam,
@@ -163,25 +166,63 @@ probabilities.
 noncomputable def theta (d : Nat) (p : Real) : Real :=
   sInf (Set.range fun n : Nat => boxExitProb d p n)
 
--- Missing later real-order/probability fact: show the range of finite box exit probabilities
--- is bounded below in the parameter regime where `theta` is used, then apply `sInf_le`.
-theorem theta_le_boxExitProb (d : Nat) (p : Real) (n : Nat) :
-    theta d p <= boxExitProb d p n := by
-  sorry
+theorem boxExitProb_nonneg {d : Nat} {p : Real} (hp0 : 0 <= p) (hp1 : p <= 1)
+    (n : Nat) : 0 <= boxExitProb d p n := by
+  unfold boxExitProb exitProb Prob
+  exact probOn_nonneg (F := (exitEvent (ball d n) (zero_mem_ball d n)).support)
+    (A := fun sigma : (exitEvent (ball d n) (zero_mem_ball d n)).support -> Bool =>
+      (exitEvent (ball d n) (zero_mem_ball d n)).pred
+        (extendConfig (exitEvent (ball d n) (zero_mem_ball d n)).support sigma))
+    hp0 hp1
 
--- Missing later real-order/probability fact: combine nonnegativity of finite Bernoulli
--- probabilities with the exponential bound and the definition of `theta` as an infimum.
+theorem theta_nonneg {d : Nat} {p : Real} (hp0 : 0 <= p) (hp1 : p <= 1) :
+    0 <= theta d p := by
+  unfold theta
+  refine le_csInf (Set.range_nonempty (fun n : Nat => boxExitProb d p n)) ?_
+  intro x hx
+  rcases hx with ⟨n, rfl⟩
+  exact boxExitProb_nonneg hp0 hp1 n
+
+theorem theta_le_boxExitProb (d : Nat) (p : Real) (n : Nat)
+    (hp0 : 0 <= p) (hp1 : p <= 1) :
+    theta d p <= boxExitProb d p n := by
+  unfold theta
+  refine csInf_le ?_ ⟨n, rfl⟩
+  refine ⟨0, ?_⟩
+  intro x hx
+  rcases hx with ⟨m, rfl⟩
+  exact boxExitProb_nonneg hp0 hp1 m
+
 theorem theta_eq_zero_of_exponential_decay {d : Nat} {p c : Real}
-    (hc : 0 < c)
+    (hp0 : 0 <= p) (hp1 : p <= 1) (hc : 0 < c)
     (hdecay : forall n : Nat, boxExitProb d p n <= Real.exp (-(c * (n : Real)))) :
     theta d p = 0 := by
-  sorry
+  refine le_antisymm ?_ (theta_nonneg hp0 hp1)
+  have hlim :
+      Tendsto (fun n : Nat => Real.exp (-(c * (n : Real)))) atTop (nhds 0) := by
+    have harg : Tendsto (fun n : Nat => (-c) * (n : Real)) atTop atBot := by
+      exact Filter.Tendsto.const_mul_atTop_of_neg (by linarith) tendsto_natCast_atTop_atTop
+    have h := Real.tendsto_exp_atBot.comp harg
+    convert h using 1
+    ext n
+    change Real.exp (-(c * (n : Real))) = Real.exp ((-c) * (n : Real))
+    congr 1
+    ring
+  have hconst : Tendsto (fun _ : Nat => theta d p) atTop (nhds (theta d p)) :=
+    tendsto_const_nhds
+  refine le_of_tendsto_of_tendsto hconst hlim ?_
+  exact Filter.Eventually.of_forall fun n =>
+    (theta_le_boxExitProb d p n hp0 hp1).trans (hdecay n)
 
 -- Missing later real-order/probability fact: prove lower bounds pass to the infimum of the
 -- finite-exit sequence.
 theorem le_theta_of_le_boxExitProb {d : Nat} {p b : Real}
     (hb : forall n : Nat, b <= boxExitProb d p n) :
     b <= theta d p := by
-  sorry
+  unfold theta
+  refine le_csInf (Set.range_nonempty (fun n : Nat => boxExitProb d p n)) ?_
+  intro x hx
+  rcases hx with ⟨n, rfl⟩
+  exact hb n
 
 end Sharpness
