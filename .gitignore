@@ -3,3 +3,5 @@
 tmp/
 reports/
 output/
+.sharpness-agent/
+.github/workflows/
