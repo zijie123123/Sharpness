@@ -1,0 +1,89 @@
+{
+  "M0": {
+    "title": "Project skeleton and exact theorem statements",
+    "files": [
+      "Sharpness/Zd.lean",
+      "Sharpness/Bonds.lean",
+      "Sharpness/FiniteGeometry.lean",
+      "Sharpness/Paths.lean",
+      "Sharpness/Clusters.lean",
+      "Sharpness/FiniteBernoulli.lean",
+      "Sharpness/LocalEvent.lean",
+      "Sharpness/Independence.lean",
+      "Sharpness/Monotonicity.lean",
+      "Sharpness/Russo.lean",
+      "Sharpness/Events.lean",
+      "Sharpness/Phi.lean",
+      "Sharpness/DiffIneq.lean",
+      "Sharpness/OdeComparison.lean",
+      "Sharpness/Supercritical.lean",
+      "Sharpness/BoundaryIneq.lean",
+      "Sharpness/Subcritical.lean",
+      "Sharpness/CriticalPoint.lean",
+      "Sharpness/Main.lean"
+    ],
+    "success": "lake build compiles; final theorem statements exist; sorries are allowed in stubs only",
+    "prompt_file": "prompts/M0_skeleton.md"
+  },
+  "M1": {
+    "title": "Finite probability API",
+    "files": [
+      "Sharpness/FiniteBernoulli.lean",
+      "Sharpness/LocalEvent.lean",
+      "Sharpness/Independence.lean",
+      "Sharpness/Monotonicity.lean"
+    ],
+    "success": "finite Bernoulli probability normalization, union bound, local event support extension, 2/3-event independence, and monotonicity compile",
+    "prompt_file": "prompts/M1_finite_probability.md"
+  },
+  "M2": {
+    "title": "Geometry, bonds, paths, connectivity, clusters",
+    "files": [
+      "Sharpness/Zd.lean",
+      "Sharpness/Bonds.lean",
+      "Sharpness/FiniteGeometry.lean",
+      "Sharpness/Paths.lean",
+      "Sharpness/Clusters.lean",
+      "Sharpness/Events.lean"
+    ],
+    "success": "box geometry, translation estimate, bonds, local connectivity and exit events, last-exit, and cluster support lemmas compile",
+    "prompt_file": "prompts/M2_geometry_connectivity.md"
+  },
+  "M3": {
+    "title": "Russo closed-pivotal formula",
+    "files": [
+      "Sharpness/Russo.lean"
+    ],
+    "success": "closed-pivotal Russo formula compiles in a finite Boolean product/local event form",
+    "prompt_file": "prompts/M3_russo.md"
+  },
+  "M4": {
+    "title": "Finite-set criterion, random shield, Lemma 2",
+    "files": [
+      "Sharpness/Phi.lean",
+      "Sharpness/DiffIneq.lean"
+    ],
+    "success": "phi, pTilde order lemmas, shield support separation, pivotal equivalence, and fundamental differential inequality compile",
+    "prompt_file": "prompts/M4_phi_diffineq.md"
+  },
+  "M5": {
+    "title": "ODE comparison, Lemma 3, Lemma 4",
+    "files": [
+      "Sharpness/OdeComparison.lean",
+      "Sharpness/Supercritical.lean",
+      "Sharpness/BoundaryIneq.lean"
+    ],
+    "success": "ODE/log comparison, supercritical lower bound, and boundary inequality compile",
+    "prompt_file": "prompts/M5_supercritical_boundary.md"
+  },
+  "M6": {
+    "title": "Lemma 5, critical point identification, final theorem",
+    "files": [
+      "Sharpness/Subcritical.lean",
+      "Sharpness/CriticalPoint.lean",
+      "Sharpness/Main.lean"
+    ],
+    "success": "exponential decay below pTilde, pTilde = pCrit, and final sharpness theorem compile; no unauthorized sorry remains",
+    "prompt_file": "prompts/M6_main.md"
+  }
+}

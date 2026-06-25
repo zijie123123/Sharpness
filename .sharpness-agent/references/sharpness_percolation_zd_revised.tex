@@ -1,0 +1,450 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{mathrsfs}
+\usepackage{enumitem}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{remark}{Remark}
+
+\newcommand{\Z}{\mathbb Z}
+\newcommand{\Pp}{\mathbb P_p}
+\newcommand{\Ep}{\mathbb E_p}
+\newcommand{\one}{\mathbf 1}
+\newcommand{\La}{\Lambda}
+\newcommand{\dd}{\mathrm d}
+\newcommand{\conn}{\longleftrightarrow}
+\newcommand{\nconn}{\mathrel{\not\longleftrightarrow}}
+\newcommand{\phip}{\varphi_p}
+\newcommand{\pct}{\widetilde p_c}
+
+\title{A Self-Contained Proof of Sharpness for Nearest-Neighbor Bond Percolation on $\Z^d$}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This note gives a self-contained version of the Duminil-Copin--Tassion sharpness argument, specialized to nearest-neighbor Bernoulli bond percolation on $\Z^d$, $d\ge 2$, and written with the open-edge parameter $p\in[0,1]$. We prove only the sharpness statements: exponential decay below criticality and a quantitative lower bound above criticality. The susceptibility estimate is intentionally omitted.
+\end{abstract}
+
+\section{Model and statement}
+
+Let $d\ge 2$. The vertex set is $\Z^d$, and two vertices $x,y$ are adjacent, written $x\sim y$, if $\|x-y\|_1=1$. In nearest-neighbor bond percolation with parameter $p\in[0,1]$, each edge is declared open with probability $p$, independently of all other edges. The resulting product measure is denoted by $\Pp$.
+
+For $S\subseteq \Z^d$, write
+\[
+ x \stackrel{S}{\conn} y
+\]
+if $x$ and $y$ are connected by an open path all of whose vertices lie in $S$. If $S=\Z^d$, we simply write $x\conn y$.
+
+Let
+\[
+ \Lambda_n:=\{x\in\Z^d:\|x\|_1\le n\},
+ \qquad
+ \theta(p):=\Pp(0\conn\infty),
+\]
+where
+\[
+ \{0\conn\infty\}:=\bigcap_{n\ge 1}\{0\conn \Lambda_n^c\}.
+\]
+Define
+\[
+ p_c:=\inf\{p\in[0,1]:\theta(p)>0\}.
+\]
+
+\begin{theorem}[Sharpness on $\Z^d$]
+For nearest-neighbor bond percolation on $\Z^d$, $d\ge 2$, the following hold.
+\begin{enumerate}[label=(\roman*)]
+\item If $p<p_c$, then there exists $c=c(p)>0$ such that, for every $n\ge 0$,
+\[
+ \Pp(0\conn \Lambda_n^c)\le e^{-c n}.
+\]
+\item If $p_c<p<1$, then
+\[
+ \theta(p)\ge \frac{p-p_c}{p(1-p_c)}.
+\]
+The endpoint $p=1$ is trivial, since $\theta(1)=1$.
+\end{enumerate}
+\end{theorem}
+
+The proof proceeds through an auxiliary critical point defined in terms of finite sets.
+For a finite set $S\subset\Z^d$ with $0\in S$, define
+\[
+ \partial_E S:=\{(x,y):x\in S,\ y\notin S,\ x\sim y\},
+\]
+where boundary edges are oriented from $S$ to its complement, and set
+\[
+ \phip(S)
+ :=
+ p\sum_{(x,y)\in\partial_E S}
+ \Pp(0\stackrel{S}{\conn}x).
+\]
+Define
+\[
+ \pct:=\sup\bigl\{p\in[0,1]:\text{there exists a finite }S\ni 0\text{ such that }\phip(S)<1\bigr\}.
+\]
+Because $\phip(S)$ is nondecreasing in $p$, the definition implies:
+\begin{align}
+ p<\pct
+ &\implies \text{there exists finite }S\ni0\text{ with }\phip(S)<1, \label{eq:below-ptilde}\\
+ p>\pct
+ &\implies \phip(S)\ge 1\text{ for every finite }S\ni0. \label{eq:above-ptilde}
+\end{align}
+Indeed, let
+\[
+ \mathcal I:=\bigl\{r\in[0,1]:\text{there exists a finite }S\ni0\text{ such that }\varphi_r(S)<1\bigr\}.
+\]
+For the first implication, if $p<\pct=\sup\mathcal I$, then there is some $q\in\mathcal I$ with $q>p$. Choose a finite $S\ni0$ such that $\varphi_q(S)<1$; by monotonicity in the edge parameter,
+\[
+ \varphi_p(S)\le \varphi_q(S)<1.
+\]
+For the second implication, if $p>\pct$ and some finite $S\ni0$ satisfied $\varphi_p(S)<1$, then $p\in\mathcal I$, contradicting $p>\sup\mathcal I$.
+
+We prove the theorem with $\pct$ in place of $p_c$, and then show $\pct=p_c$.
+
+\section{Russo's formula in the form used below}
+
+Let $A$ be an increasing event depending on finitely many edges. For an edge $e$, call $e$ \emph{closed-pivotal} for $A$ if $e$ is closed, $A$ does not occur, and forcing $e$ to be open makes $A$ occur.
+
+\begin{lemma}[Russo formula, closed-pivotal form]
+If $A$ is increasing and depends on finitely many edges, then
+\[
+ \frac{\dd}{\dd p}\Pp(A)
+ =
+ \frac1{1-p}\sum_e
+ \Pp(e\text{ is closed-pivotal for }A),
+ \qquad 0<p<1.
+\]
+The sum is over the finite set of edges on which $A$ depends.
+\end{lemma}
+
+\begin{proof}
+Let $F$ be the finite edge set on which $A$ depends. For $e\in F$, let $B_e$ be the event, depending only on the states of edges in $F\setminus\{e\}$, that changing the state of $e$ changes whether $A$ occurs. For increasing $A$, this means that $A$ occurs when $e$ is open and fails when $e$ is closed. Hence
+\[
+ \frac{\partial}{\partial p_e}\P(A)=\P(B_e).
+\]
+In the homogeneous model $p_e=p$ for all $e$, so
+\[
+ \frac{\dd}{\dd p}\Pp(A)=\sum_{e\in F}\Pp(B_e).
+\]
+Since $B_e$ is independent of the state of $e$,
+\[
+ \Pp(e\text{ is closed-pivotal})=(1-p)\Pp(B_e).
+\]
+Substituting gives the claimed formula.
+\end{proof}
+
+\section{The fundamental differential inequality}
+
+For a finite set $\Lambda\subset\Z^d$ with $0\in\Lambda$, define
+\[
+ A_\Lambda:=\{0\conn \Lambda^c\},
+ \qquad
+ f_\Lambda(p):=\Pp(A_\Lambda).
+\]
+The event $A_\Lambda$ depends on finitely many edges. Indeed, since $\Lambda$ is finite and the model is nearest-neighbor,
+\[
+ A_\Lambda
+ =
+ \bigcup_{(x,y)\in\partial_E\Lambda}
+ \bigl\{0\stackrel{\Lambda}{\conn}x\bigr\}\cap\{xy\text{ is open}\}.
+\]
+The right-hand side only uses the finitely many edges with both endpoints in $\Lambda$ and the finitely many boundary edges in $\partial_E\Lambda$.
+
+\begin{lemma}[Differential inequality]
+For every finite $\Lambda\ni0$ and every $0<p<1$,
+\[
+ f_\Lambda'(p)
+ \ge
+ \frac1{p(1-p)}
+ \inf_{\substack{S\subset\Lambda\\0\in S}}
+ \phip(S)\,
+ \bigl(1-f_\Lambda(p)\bigr).
+\]
+\end{lemma}
+
+\begin{proof}
+Let
+\[
+ \mathscr S:=\{x\in\Lambda:x\nconn \Lambda^c\}.
+\]
+Thus $0\in\mathscr S$ exactly on the event $A_\Lambda^c$.
+
+By the closed-pivotal Russo formula,
+\[
+ f_\Lambda'(p)
+ =
+ \frac1{1-p}\sum_e
+ \Pp(e\text{ is closed-pivotal for }A_\Lambda).
+\]
+We decompose according to the value of $\mathscr S$. Fix a set $S\subset\Lambda$ with $0\in S$ and an oriented boundary edge $(x,y)\in\partial_E S$. On the event $\{\mathscr S=S\}$, the edge $xy$ is closed-pivotal for $A_\Lambda$ if and only if
+\[
+ 0\stackrel{S}{\conn}x.
+\]
+Indeed, assume first that $0\stackrel{S}{\conn}x$ and $\mathscr S=S$. If $y\in\Lambda\setminus S$, then $y$ is connected to $\Lambda^c$ by the definition of $\mathscr S$; if $y\notin\Lambda$, then $y$ is connected to $\Lambda^c$ by the trivial path. The edge $xy$ must be closed, since otherwise $x\in S$ would be connected to $\Lambda^c$. Opening $xy$ therefore connects $0$ to $\Lambda^c$, while $A_\Lambda$ does not occur on $\{\mathscr S=S\}$ because $0\in S$.
+Conversely, suppose that $xy$ is closed-pivotal and $\mathscr S=S$. After $xy$ is opened, every open path from $0$ to $\Lambda^c$ must use the edge $xy$, since $A_\Lambda$ failed before it was opened. The endpoint of $xy$ connected to $0$ before the opening cannot be $y$: if $y\in\Lambda\setminus S$, then $y\conn\Lambda^c$, and if $y\notin\Lambda$, then $y\in\Lambda^c$. Hence $0$ is connected to $x$ before the opening. This connection cannot visit $\Lambda\setminus S$ or $\Lambda^c$, since every vertex of $\Lambda\setminus S$ is connected to $\Lambda^c$ and visiting $\Lambda^c$ would already give $A_\Lambda$. Thus $0\stackrel{S}{\conn}x$.
+
+We next give a precise measurability statement. For fixed $S$, let $\omega^{\mathrm{out}}$ be the configuration obtained from $\omega$ by closing all edges with both endpoints in $S$. Then $\{\mathscr S=S\}$ is equivalent to the following two conditions, both evaluated in $\omega^{\mathrm{out}}$:
+\begin{enumerate}[label=(\alph*)]
+\item no vertex of $S$ is connected to $\Lambda^c$;
+\item every vertex of $\Lambda\setminus S$ is connected to $\Lambda^c$.
+\end{enumerate}
+The implication from these two conditions to $\mathscr S=S$ follows by a last-exit argument: if, after restoring the internal edges of $S$, some vertex of $S$ were connected to $\Lambda^c$, then along such a path take the last edge leaving $S$; the $S$-endpoint of this edge would already be connected to $\Lambda^c$ without using any edge internal to $S$, contradicting (a). Conversely, if $\mathscr S=S$ in the full configuration, then (a) is immediate after deleting edges. For (b), take $z\in\Lambda\setminus S$. Since $z\conn\Lambda^c$ in the full configuration, choose an open path from $z$ to $\Lambda^c$. If no such path existed in $\omega^{\mathrm{out}}$, the path would have to use an internal edge of $S$; taking its last exit from $S$ would again show that some vertex of $S$ is connected to $\Lambda^c$ in $\omega^{\mathrm{out}}$, contradicting $\mathscr S=S$. Hence $\{\mathscr S=S\}$ is measurable with respect to the edges that are not internal to $S$.
+
+The event $\{0\stackrel{S}{\conn}x\}$ depends only on edges internal to $S$, so it is independent of $\{\mathscr S=S\}$. Therefore
+\[
+ \Pp(0\stackrel{S}{\conn}x,\ \mathscr S=S)
+ =
+ \Pp(0\stackrel{S}{\conn}x)\Pp(\mathscr S=S).
+\]
+Using only the closed-pivotal edges oriented from $S$ to $S^c$, we get
+\begin{align*}
+ f_\Lambda'(p)
+ &\ge
+ \frac1{1-p}
+ \sum_{\substack{S\subset\Lambda\\0\in S}}
+ \sum_{(x,y)\in\partial_E S}
+ \Pp(0\stackrel{S}{\conn}x,\ \mathscr S=S)\\
+ &=
+ \frac1{1-p}
+ \sum_{\substack{S\subset\Lambda\\0\in S}}
+ \sum_{(x,y)\in\partial_E S}
+ \Pp(0\stackrel{S}{\conn}x)\Pp(\mathscr S=S)\\
+ &=
+ \frac1{p(1-p)}
+ \sum_{\substack{S\subset\Lambda\\0\in S}}
+ \phip(S)\Pp(\mathscr S=S)\\
+ &\ge
+ \frac1{p(1-p)}
+ \inf_{\substack{S\subset\Lambda\\0\in S}}\phip(S)
+ \sum_{\substack{S\subset\Lambda\\0\in S}}\Pp(\mathscr S=S).
+\end{align*}
+Finally,
+\[
+ \sum_{\substack{S\subset\Lambda\\0\in S}}\Pp(\mathscr S=S)
+ =
+ \Pp(0\in\mathscr S)
+ =
+ 1-f_\Lambda(p).
+\]
+This proves the lemma.
+\end{proof}
+
+\section{Supercritical lower bound}
+
+\begin{lemma}[Lower bound above $\pct$]
+If $\pct<p<1$, then
+\[
+ \theta(p)\ge \frac{p-\pct}{p(1-\pct)}.
+\]
+If $\pct<1$, the endpoint $p=1$ also follows by taking $p\uparrow1$, or directly from $\theta(1)=1$.
+\end{lemma}
+
+\begin{proof}
+Fix a finite $\Lambda\ni0$. If $q>\pct$, then \eqref{eq:above-ptilde} gives
+\[
+ \inf_{\substack{S\subset\Lambda\\0\in S}}\varphi_q(S)\ge1.
+\]
+Thus, for $q\in(\pct,1)$,
+\[
+ f_\Lambda'(q)
+ \ge
+ \frac1{q(1-q)}(1-f_\Lambda(q)).
+\]
+For $q<1$ we have $f_\Lambda(q)<1$: closing all edges in $\partial_E\Lambda$ prevents $A_\Lambda$, and this has positive probability. Hence $\log(1-f_\Lambda(q))$ is well-defined, and the preceding inequality gives
+\[
+ \frac{\dd}{\dd q}\log(1-f_\Lambda(q))
+ \le
+ -\frac1{q(1-q)}.
+\]
+Let $\pct<q<p<1$. Integrating from $q$ to $p$ gives
+\[
+ \log\frac{1-f_\Lambda(p)}{1-f_\Lambda(q)}
+ \le
+ -\int_q^p \frac{\dd t}{t(1-t)}
+ =
+ -\log\frac{p(1-q)}{q(1-p)}.
+\]
+Hence
+\[
+ 1-f_\Lambda(p)
+ \le
+ (1-f_\Lambda(q))\frac{q(1-p)}{p(1-q)}
+ \le
+ \frac{q(1-p)}{p(1-q)}.
+\]
+Letting $q\downarrow\pct$ yields
+\[
+ f_\Lambda(p)
+ \ge
+ 1-\frac{\pct(1-p)}{p(1-\pct)}
+ =
+ \frac{p-\pct}{p(1-\pct)}.
+\]
+Now take $\Lambda=\Lambda_n$ and let $n\to\infty$. The events $\{0\conn\Lambda_n^c\}$ decrease to $\{0\conn\infty\}$, so by continuity from above,
+\[
+ \theta(p)=\lim_{n\to\infty}f_{\Lambda_n}(p)
+ \ge
+ \frac{p-\pct}{p(1-\pct)}.
+\]
+\end{proof}
+
+\section{A boundary inequality}
+
+The following lemma is the finite-set expansion estimate that drives the subcritical part.
+
+\begin{lemma}[Boundary inequality]
+Let $S\subset\Z^d$ be finite, let $u\in S$, and let $B\subset\Z^d$ satisfy $B\cap S=\varnothing$. Then
+\[
+ \Pp(u\conn B)
+ \le
+ \sum_{(x,y)\in\partial_E S}
+ p\,\Pp(u\stackrel{S}{\conn}x)\,\Pp(y\conn B).
+\]
+Here $y\conn B$ means that $y$ is connected to at least one vertex of $B$, with the convention that the event holds if $y\in B$.
+\end{lemma}
+
+\begin{proof}
+Let $C=C_S(u)$ be the open cluster of $u$ inside $S$:
+\[
+ C_S(u):=\{x\in S:u\stackrel{S}{\conn}x\}.
+\]
+Fix a possible value $C_0\subset S$ with $u\in C_0$. On the event $\{C=C_0\}$, if $u\conn B$, choose a self-avoiding open path from $u$ to $B$. Since $B\cap S=\varnothing$, the path eventually leaves $C_0$. Let $x$ be the last vertex of the path lying in $C_0$, and let $y$ be the next vertex. Then $x\in C_0$, $x\sim y$, and $y\notin S$; if $y\in S$, the open edge $xy$ would put $y$ in the $S$-cluster of $u$, contradicting the choice of $C_0$. The remaining part of the path connects $y$ to $B$ while avoiding $C_0$.
+
+Therefore
+\[
+ \{u\conn B,\ C=C_0\}
+ \subseteq
+ \bigcup_{\substack{x\in C_0,\ y\notin S\\x\sim y}}
+ \{C=C_0\}\cap\{xy\text{ open}\}\cap\{y\stackrel{\Z^d\setminus C_0}{\conn}B\}.
+\]
+For fixed $C_0,x,y$, these three events are measurable with respect to pairwise disjoint edge sets. More explicitly, $\{C=C_0\}$ only uses edges with both endpoints in $S$ and at least one endpoint in $C_0$; the event $\{xy\text{ open}\}$ uses the single edge with $x\in C_0$ and $y\notin S$; and $\{y\stackrel{\Z^d\setminus C_0}{\conn}B\}$ only uses edges with both endpoints in $\Z^d\setminus C_0$. Hence the three events are independent. By a union bound,
+\begin{align*}
+ \Pp(u\conn B,\ C=C_0)
+ &\le
+ \sum_{\substack{x\in C_0,\ y\notin S\\x\sim y}}
+ \Pp(C=C_0)\,p\,\Pp(y\stackrel{\Z^d\setminus C_0}{\conn}B)\\
+ &\le
+ \sum_{\substack{x\in C_0,\ y\notin S\\x\sim y}}
+ \Pp(C=C_0)\,p\,\Pp(y\conn B).
+\end{align*}
+Summing over all possible $C_0$ gives
+\begin{align*}
+ \Pp(u\conn B)
+ &\le
+ \sum_{C_0}
+ \sum_{\substack{x\in C_0,\ y\notin S\\x\sim y}}
+ \Pp(C=C_0)\,p\,\Pp(y\conn B)\\
+ &=
+ \sum_{(x,y)\in\partial_E S}
+ p\,\Pp(x\in C_S(u))\,\Pp(y\conn B)\\
+ &=
+ \sum_{(x,y)\in\partial_E S}
+ p\,\Pp(u\stackrel{S}{\conn}x)\,\Pp(y\conn B).
+\end{align*}
+\end{proof}
+
+\section{Subcritical exponential decay}
+
+\begin{lemma}[Exponential decay below $\pct$]
+If $p<\pct$, then there exists $c=c(p)>0$ such that, for every $n\ge0$,
+\[
+ \Pp(0\conn \Lambda_n^c)\le e^{-cn}.
+\]
+\end{lemma}
+
+\begin{proof}
+If $p=0$, the result is immediate. Assume $0<p<\pct$. By \eqref{eq:below-ptilde}, choose a finite set $S\ni0$ such that
+\[
+ \rho:=\phip(S)<1.
+\]
+Choose $L\ge1$ such that $S\subset\Lambda_{L-1}$. Then every boundary endpoint $y$ appearing in $\partial_E S$ belongs to $\Lambda_L$.
+
+Set
+\[
+ a_n:=\Pp(0\conn \Lambda_n^c).
+\]
+For $n\ge L$, apply the boundary inequality with $u=0$ and $B=\Lambda_n^c$:
+\[
+ a_n
+ \le
+ \sum_{(x,y)\in\partial_E S}
+ p\,\Pp(0\stackrel{S}{\conn}x)\,\Pp(y\conn \Lambda_n^c).
+\]
+For each boundary endpoint $y\in\Lambda_L$, the event $\{y\conn\Lambda_n^c\}$ implies, after translating $y$ to the origin, the event $\{0\conn\Lambda_{n-L}^c\}$. Indeed, if $y$ is connected to some $z\in\Lambda_n^c$, then
+\[
+ \|z-y\|_1\ge \|z\|_1-\|y\|_1>n-L,
+\]
+so the translated endpoint $z-y$ lies in $\Lambda_{n-L}^c$. Hence
+\[
+ \Pp(y\conn\Lambda_n^c)
+ \le
+ a_{n-L}.
+\]
+Consequently,
+\[
+ a_n\le \rho\,a_{n-L},
+ \qquad n\ge L.
+\]
+Iterating gives
+\[
+ a_n\le \rho^{\lfloor n/L\rfloor},
+ \qquad n\ge0,
+\]
+where we use the trivial bound $a_m\le1$ for the final remainder. Since $\rho<1$,
+\[
+ a_n\le \exp\!\left(-\frac{-\log\rho}{2L}n\right)
+ \qquad\text{for all }n\ge L.
+\]
+For the finitely many $1\le n<L$, we also have $a_n<1$: closing all edges crossing from $\Lambda_n$ to $\Lambda_n^c$ prevents $0$ from connecting to $\Lambda_n^c$, and this has positive probability because $p<1$. Therefore, with the convention that the minimum over an empty set is $+\infty$, define
+\[
+ c:=\min\left\{
+ \frac{-\log\rho}{2L},
+ \min_{1\le n<L}\frac{-\log a_n}{n}
+ \right\}>0.
+\]
+Then $a_n\le e^{-cn}$ for every $n\ge1$, while the case $n=0$ is trivial because $a_0\le1=e^0$.
+\end{proof}
+
+\section{Identification of the critical point}
+
+We now prove $\pct=p_c$. Recall first that $\theta$ is nondecreasing in $p$ by the standard product coupling, and that $\theta(1)=1$.
+
+First, suppose $\pct<1$. For every $p\in(\pct,1)$, the supercritical lemma gives $\theta(p)>0$, hence $p_c\le p$. Letting $p\downarrow\pct$ gives $p_c\le\pct$. If $\pct=1$, then the same inequality is trivial because $p_c\le1=\pct$.
+
+Second, if $p<\pct$, the exponential decay lemma gives
+\[
+ \Pp(0\conn\Lambda_n^c)\le e^{-cn}\xrightarrow[n\to\infty]{}0.
+\]
+Since the events $\{0\conn\Lambda_n^c\}$ decrease to $\{0\conn\infty\}$,
+\[
+ \theta(p)=0.
+\]
+Thus no parameter below $\pct$ belongs to the set $\{p:\theta(p)>0\}$. Since this set is nonempty, because $\theta(1)=1$, its infimum is at least $\pct$; that is,
+\[
+ \pct\le p_c.
+\]
+Combining the two inequalities yields
+\[
+ \pct=p_c.
+\]
+
+The supercritical and subcritical lemmas can now be rewritten with $p_c$ in place of $\pct$. This proves sharpness of the phase transition.
+
+\begin{remark}
+The proof above deliberately omits the susceptibility estimate. The usual Duminil-Copin--Tassion argument also proves finiteness of $\sum_x\Pp(0\conn x)$ for $p<p_c$; here that step is unnecessary because the boundary inequality already gives the stronger distance-to-boundary exponential decay in the nearest-neighbor case.
+\end{remark}
+
+\begin{thebibliography}{1}
+\bibitem{DCT}
+H.~Duminil-Copin and V.~Tassion,
+\emph{A new proof of the sharpness of the phase transition for Bernoulli percolation and the Ising model},
+Commun. Math. Phys. 343, 725--745 (2016), arXiv:1502.03050.
+\end{thebibliography}
+
+\end{document}
