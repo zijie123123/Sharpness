@@ -1,4 +1,16 @@
+/-
+Copyright (c) 2026 Zijie Zhuang. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Zijie Zhuang
+-/
+
 import Sharpness.Bonds
+
+/-!
+# Finite Bernoulli Probability
+
+This file develops Bernoulli product probabilities on finite coordinate sets.
+-/
 
 namespace Sharpness
 

@@ -1,4 +1,17 @@
+/-
+Copyright (c) 2026 Zijie Zhuang. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Zijie Zhuang
+-/
+
 import Sharpness.Zd
+
+/-!
+# Bonds
+
+This file defines unoriented nearest-neighbor bonds, configurations, and finite
+sets of internal and boundary bonds.
+-/
 
 namespace Sharpness
 

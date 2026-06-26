@@ -1,5 +1,18 @@
+/-
+Copyright (c) 2026 Zijie Zhuang. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Zijie Zhuang
+-/
+
 import Sharpness.Independence
 import Sharpness.Monotonicity
+
+/-!
+# Russo's Formula
+
+This file proves finite Boolean-cube identities culminating in Russo's
+closed-pivotal formula.
+-/
 
 namespace Sharpness
 

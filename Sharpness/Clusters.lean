@@ -1,5 +1,18 @@
+/-
+Copyright (c) 2026 Zijie Zhuang. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Zijie Zhuang
+-/
+
 import Sharpness.LocalEvent
 import Sharpness.Paths
+
+/-!
+# Clusters
+
+This file defines finite-volume open clusters and their basic locality and
+connectivity properties.
+-/
 
 namespace Sharpness
 

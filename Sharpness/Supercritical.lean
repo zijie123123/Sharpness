@@ -1,5 +1,17 @@
+/-
+Copyright (c) 2026 Zijie Zhuang. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Zijie Zhuang
+-/
+
 import Sharpness.DiffIneq
 import Sharpness.OdeComparison
+
+/-!
+# Supercritical Lower Bound
+
+This file proves the density lower bound above the finite-set critical point.
+-/
 
 namespace Sharpness
 

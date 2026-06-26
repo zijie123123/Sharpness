@@ -1,4 +1,16 @@
+/-
+Copyright (c) 2026 Zijie Zhuang. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Zijie Zhuang
+-/
+
 import Sharpness.LocalEvent
+
+/-!
+# Independence
+
+This file proves independence identities for local events with disjoint supports.
+-/
 
 namespace Sharpness
 

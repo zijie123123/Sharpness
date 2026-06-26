@@ -1,4 +1,17 @@
+/-
+Copyright (c) 2026 Zijie Zhuang. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Zijie Zhuang
+-/
+
 import Sharpness.LocalEvent
+
+/-!
+# Monotonicity
+
+This file proves monotonicity of increasing local events under Bernoulli
+parameter comparison.
+-/
 
 namespace Sharpness
 

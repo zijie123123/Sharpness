@@ -1,5 +1,18 @@
+/-
+Copyright (c) 2026 Zijie Zhuang. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Zijie Zhuang
+-/
+
 import Sharpness.Events
 import Sharpness.Monotonicity
+
+/-!
+# Finite-Set Criterion
+
+This file defines `phi`, `pTilde`, and the basic order lemmas for the finite-set
+criterion.
+-/
 
 namespace Sharpness
 

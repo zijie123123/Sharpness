@@ -1,6 +1,19 @@
+/-
+Copyright (c) 2026 Zijie Zhuang. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Zijie Zhuang
+-/
+
 import Sharpness.Clusters
 import Sharpness.Events
 import Sharpness.Independence
+
+/-!
+# Boundary Inequality
+
+This file proves the finite-volume boundary expansion inequality used in the
+sharpness argument.
+-/
 
 namespace Sharpness
 

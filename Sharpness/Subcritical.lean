@@ -1,6 +1,18 @@
+/-
+Copyright (c) 2026 Zijie Zhuang. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Zijie Zhuang
+-/
+
 import Sharpness.BoundaryIneq
 import Sharpness.FiniteGeometry
 import Sharpness.Phi
+
+/-!
+# Subcritical Exponential Decay
+
+This file proves exponential decay below the finite-set critical point.
+-/
 
 namespace Sharpness
 

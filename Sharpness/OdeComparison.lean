@@ -1,4 +1,17 @@
+/-
+Copyright (c) 2026 Zijie Zhuang. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Zijie Zhuang
+-/
+
 import Mathlib
+
+/-!
+# ODE Comparison
+
+This file proves the real-variable logarithmic comparison used in the
+supercritical argument.
+-/
 
 namespace Sharpness
 

@@ -1,4 +1,17 @@
+/-
+Copyright (c) 2026 Zijie Zhuang. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Zijie Zhuang
+-/
+
 import Sharpness.CriticalPoint
+
+/-!
+# Main Sharpness Theorem
+
+This file states and proves the final sharpness theorem from the critical-point
+lemmas.
+-/
 
 namespace Sharpness
 

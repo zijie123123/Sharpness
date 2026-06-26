@@ -1,5 +1,17 @@
+/-
+Copyright (c) 2026 Zijie Zhuang. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Zijie Zhuang
+-/
+
 import Sharpness.Phi
 import Sharpness.Russo
+
+/-!
+# Differential Inequality
+
+This file proves the finite-volume differential inequality for exit events.
+-/
 
 namespace Sharpness
 

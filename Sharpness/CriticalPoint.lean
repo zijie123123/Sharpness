@@ -1,5 +1,18 @@
+/-
+Copyright (c) 2026 Zijie Zhuang. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Zijie Zhuang
+-/
+
 import Sharpness.Subcritical
 import Sharpness.Supercritical
+
+/-!
+# Critical Point
+
+This file relates the finite-set critical point to the critical point defined by
+the finite-exit density `theta`.
+-/
 
 namespace Sharpness
 
