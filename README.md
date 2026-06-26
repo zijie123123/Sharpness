@@ -6,7 +6,7 @@ percolation on `Z^d`.
 The formalization follows the argument of Hugo Duminil-Copin and Vincent
 Tassion in
 [*A new proof of the sharpness of the phase transition for Bernoulli
-percolation on `\mathbb{Z}^d`*](https://arxiv.org/abs/1502.03051).
+percolation on `\mathbb{Z}^d`*](https://arxiv.org/abs/1502.03050).
 
 The development is written in Lean 4 and builds on mathlib. It defines the
 finite-volume percolation model on `Z^d`, including bonds, paths, clusters,
