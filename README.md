@@ -1,7 +1,6 @@
-# Sharpness for Bernoulli Percolation in Lean
+# Formalizing Sharpness for Bernoulli Percolation
 
-This repository formalizes the sharpness phase transition for nearest-neighbor
-Bernoulli bond percolation on `Z^d`.
+This repository formalizes the sharpness phase transition for Bernoulli bond percolation on `Z^d`.
 
 The development is written in Lean 4 and builds on mathlib. It defines the
 finite-volume percolation model on `Z^d`, including bonds, paths, clusters,
